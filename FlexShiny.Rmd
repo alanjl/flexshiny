@@ -1,0 +1,105 @@
+---
+title: "Playing with Linear Models"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Linear Model Viewer
+
+
+```{r linear_model, echo=FALSE}
+library(shiny)
+
+ui <- shinyUI(pageWithSidebar(
+  headerPanel("Visualizing Random Data about a Line"),
+  sidebarPanel(
+    sliderInput('intrcept', 'Choose intercept',value = 10, min = -20, max = 100, step = 5,),
+    sliderInput('slope', 'Choose a slope',value = 0.33, min = 0, max = 2, step = 0.05,),
+    sliderInput('nrands', 'Number of random points',value = 375, min = 50, max = 500, step = 10,),
+    sliderInput('sdev', 'Standard deviation of random error',value = 50, min = 10, max = 100, step = 5,)
+  ),
+  mainPanel(
+    plotOutput('newPlot'),
+    h3('model R squared:'),
+    textOutput("mdlfit")
+  )
+))
+
+server <- function(input, output) {
+    
+    xcl <- reactive({
+      runif(input$nrands, 0,500)
+    })  
+    
+    ycl <- reactive({
+      input$intrcept + input$slope * xcl() + rnorm(input$nrands, 0, input$sdev)
+    })  
+    
+    modlcl <- reactive({
+      lm(ycl() ~ xcl(), data=data.frame(ycl(),xcl()))
+    })  
+    
+    output$newPlot <- renderPlot({
+      plot(xcl(), ycl(), xlab='x value', col='lightblue',main='The Model', xlim=c(-25,max(xcl())), ylim=c(-50,500))
+      abline(modlcl(), col="green",lwd=3)
+      
+    })
+    
+    output$mdlfit <- renderText({
+      summary(modlcl())$r.squared
+    })  
+    
+  }
+shinyApp(ui = ui, server = server)
+options = list(height = 1500)
+
+```
+
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Documentation Panel
+
+To use the application move the sliders on the left.
+Watch the changes that happen in the plot.
+
+The application does the following as a reaction to changing a slider value:   
+1.  calculate a new set of random points   
+2.  fit a linear model and draw the fitted line over the plot.   
+3.  display the R-squared value for the model   
+
+
+The Panel on the left provides the following:   
+
+* Main panel: a plot of some generated random data points   
+* Sidebar panel: a group of sliders that allow the parameters to be adjusted within fixed ranges
+* Output: the R-squared value for the current model fit to the current set of data points
+
+Main panel - the plot displays a number of randomly generated points.
+The x values are uniformly distributed on a range from 0 to 500.
+The y values are calculated using the following equation. 
+
+    y = a + b * x + e
+    
+Where:   
+a - the constant intercept at x = 0   
+b - the slope   
+x - the random uniform data   
+e - a normal distributed random value with standard deviation set by the slider   
+
+
+
+### Links
+
+[Source code on Github](https://github.com/alanjl/dataprodassignment)
