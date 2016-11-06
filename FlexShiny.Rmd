@@ -102,4 +102,8 @@ e - a normal distributed random value with standard deviation set by the slider
 
 ### Links
 
-[Source code on Github](https://github.com/alanjl/dataprodassignment)
+
+[Source code on Github](https://github.com/alanjl/flexshiny)
+
+Note that all code is contained in one file: FlexShiny.Rmd
+
